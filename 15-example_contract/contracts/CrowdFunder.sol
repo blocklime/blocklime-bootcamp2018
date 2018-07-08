@@ -65,7 +65,7 @@ contract CrowdFunder {
         _;
     }
 
-    function CrowdFunder (
+    constructor (
         uint timeInHoursForFundraising,
         string _campaignUrl,
         address _fundRecipient,
@@ -74,7 +74,7 @@ contract CrowdFunder {
         creator = msg.sender;
         fundRecipient = _fundRecipient;
         campaignUrl = _campaignUrl;
-        minimumToRaise = _minimumToRaise * 1000000000000000000; //convert to wei
+        minimumToRaise = _minimumToRaise * 1 ether; //convert to wei
         raiseBy = now + (timeInHoursForFundraising * 1 hours);
         currentBalance = 0;
         LogFunderInitialized(
