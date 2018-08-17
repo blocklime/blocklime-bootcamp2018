@@ -12,7 +12,7 @@ var web3 = new Web3(provider);
 var MyContract = contract(abi);
 MyContract.setProvider(provider);
 
-MyContract.at(conf.contract.address).then(function(crowdFunder){
+MyContract.deployed().then(function(crowdFunder){
     var app = http.createServer(function(req,res){
         var url = Url.parse(req.url, true);
 
@@ -25,7 +25,8 @@ MyContract.at(conf.contract.address).then(function(crowdFunder){
 
                 crowdFunder.contribute({
                     value: web3.toWei(ether,'ether'),
-                    from: url.query.address
+                    from: url.query.address,
+					gas: 3000000
                 })
                 .then(function(){
                     res.end('Thank you');
@@ -36,19 +37,28 @@ MyContract.at(conf.contract.address).then(function(crowdFunder){
                 })
                 break;
             default:
-                res.end(`
-                    <html>
-                    <body>
-                        <h1>Hello</h1>
-
-                        <form action="/contribute" method="GET">
-                            Wallet: <input type="text" name="address" id="address">
-                            Contribute: <input type="text" name="value" id="value">
-                            <input type="submit" value="Submit" name="submit">
-                        </form>
-                    </body>
-                    </html>        
-                `);
+				crowdFunder.totalRaised()
+					.then(total => web3.fromWei(total.toNumber())) // convert returned value to Ether
+					.then(total => {
+		                res.end(`
+		                    <html>
+		                    <body>
+		                        <h1>Hello</h1>
+								
+								<div>
+									<h2> Total Raised = ${total} </h2>
+								</div>
+		
+		                        <form action="/contribute" method="GET">
+		                            Wallet: <input type="text" name="address" id="address">
+		                            Contribute: <input type="text" name="value" id="value">
+		                            <input type="submit" value="Submit" name="submit">
+		                        </form>
+		                    </body>
+		                    </html>        
+		                `);
+					})
+					.catch(err => console.log(err));
         }
     });
     app.listen(8080,function(){
